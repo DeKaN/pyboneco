@@ -64,7 +64,7 @@ class BonecoAuth:
         self._state_callback = callback
     
     def reset_state(self) -> None:
-        self._set_state(BonecoAuthState.AUTH_ERROR)
+        self._current_state = BonecoAuthState.AUTH_ERROR
 
     def save(self) -> dict[str, str]:
         return {
@@ -96,7 +96,7 @@ class BonecoAuth:
                     )
                 else:
                     self._nonce = bytearray()
-                    logger.error(
+                    logger.warning(
                         f"Auth error, current level remains {self._current_auth_level}"
                     )
                     self._set_state(BonecoAuthState.AUTH_ERROR)

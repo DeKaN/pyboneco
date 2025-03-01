@@ -2,7 +2,7 @@ from typing import Optional
 
 from .enums import BonecoOperationMode, BonecoModeStatus, BonecoDeviceClass
 
-OperationModeConfig = Optional[dict[BonecoModeStatus, bool]]
+BonecoOperationModeConfig = Optional[dict[BonecoModeStatus, bool]]
 
 
 class BonecoDevice:
@@ -10,7 +10,7 @@ class BonecoDevice:
     device_class: BonecoDeviceClass
     product_id: str
     product_name: str
-    operating_modes: dict[BonecoOperationMode, OperationModeConfig]
+    operating_modes: dict[BonecoOperationMode, BonecoOperationModeConfig]
     device_timer_support: bool
     history_support: bool
     particle_sensor: bool
@@ -33,7 +33,7 @@ class BonecoDevice:
         device_class: BonecoDeviceClass,
         product_id: str,
         product_name,
-        operating_modes: dict[BonecoOperationMode, OperationModeConfig],
+        operating_modes: dict[BonecoOperationMode, BonecoOperationModeConfig],
         device_timer_support: bool = False,
         history_support: bool = False,
         particle_sensor: bool = False,

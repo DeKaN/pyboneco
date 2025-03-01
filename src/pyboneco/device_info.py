@@ -3,7 +3,7 @@ from __future__ import annotations
 from bisect import bisect_left
 
 from .constants import SUPPORTED_DEVICES_BY_TYPE
-from .device import BonecoDevice, OperationModeConfig
+from .device import BonecoDevice, BonecoOperationModeConfig
 from .enums import BonecoOperationMode
 from .utils import build_software_version
 
@@ -162,7 +162,7 @@ class BonecoDeviceInfo:
     @property
     def supported_operating_modes(
         self,
-    ) -> dict[BonecoOperationMode, OperationModeConfig] | None:
+    ) -> dict[BonecoOperationMode, BonecoOperationModeConfig] | None:
         return self.device and self.device.operating_modes
 
     @property
