@@ -59,6 +59,7 @@ class BonecoDeviceState:
             self._operating_mode = BonecoOperationMode.NONE
             self._mode_status = BonecoModeStatus.CUSTOM
             self._fan = flag & 127
+            self._fan_mode = 0
         else:
             self._operating_mode = BonecoOperationMode(flag & 3)
             self._mode_status = BonecoModeStatus((flag >> 2) & 3)

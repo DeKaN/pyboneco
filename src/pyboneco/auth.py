@@ -62,7 +62,7 @@ class BonecoAuth:
 
     def set_auth_state_callback(self, callback: Callable[["BonecoAuth"], None] | None):
         self._state_callback = callback
-    
+
     def reset_state(self) -> None:
         self._current_state = BonecoAuthState.AUTH_ERROR
 
@@ -113,7 +113,7 @@ class BonecoAuth:
         logger.debug("[Chars] {0}: {1}".format(sender, data))
         if sender.handle == 0x029:
             logger.debug(
-                f'RSSI level: {int.from_bytes(data[0:1], byteorder="little", signed=True)}, state: {data[1]}'
+                f"RSSI level: {int.from_bytes(data[0:1], byteorder='little', signed=True)}, state: {data[1]}"
             )
             if self._current_state < BonecoAuthState.CONFIRMED and data[1] & 1 == 1:
                 logger.info("Pairing confirmed")
