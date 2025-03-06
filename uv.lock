@@ -130,7 +130,7 @@ wheels = [
 
 [[package]]
 name = "pyboneco"
-version = "0.3.6"
+version = "0.3.7"
 source = { editable = "." }
 dependencies = [
     { name = "bleak" },
@@ -145,9 +145,9 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "bleak", specifier = "==0.22.3" },
-    { name = "bleak-retry-connector", specifier = "==3.8.1" },
-    { name = "cryptography", specifier = "==44.0.0" },
+    { name = "bleak", specifier = ">=0.22.3" },
+    { name = "bleak-retry-connector", specifier = ">=3.8.1" },
+    { name = "cryptography", specifier = ">=44.0.0" },
 ]
 
 [package.metadata.requires-dev]

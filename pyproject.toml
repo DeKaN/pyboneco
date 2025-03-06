@@ -1,6 +1,6 @@
 [project]
 name = "pyboneco"
-version = "0.3.6"
+version = "0.3.7"
 description = "Basic library for working with Boneco devices"
 readme = "README.md"
 authors = [
@@ -16,9 +16,9 @@ classifiers = [
 ]
 requires-python = ">=3.13"
 dependencies = [
-    "bleak==0.22.3",
-    "bleak-retry-connector==3.8.1",
-    "cryptography==44.0.0",
+    "bleak>=0.22.3",
+    "bleak-retry-connector>=3.8.1",
+    "cryptography>=44.0.0",
 ]
 
 [project.urls]
