@@ -9,6 +9,7 @@ from cryptography.hazmat.primitives.ciphers import Cipher
 from cryptography.hazmat.primitives.ciphers.algorithms import AES
 from cryptography.hazmat.primitives.ciphers.modes import ECB
 
+from .constants import CHARACTERISTIC_AUTH, CHARACTERISTIC_AUTH_AND_SERVICE
 from .enums import BonecoAuthState
 
 logger = logging.getLogger(__name__)
@@ -75,7 +76,7 @@ class BonecoAuth:
 
     def auth_handler(self, sender: BleakGATTCharacteristic, data: bytearray) -> None:
         logger.debug("[Auth] {0}: {1}".format(sender, data))
-        if sender.handle == 0x026:
+        if sender.uuid == CHARACTERISTIC_AUTH:
             if len(data) == 20 and data[0] == 1:
                 logger.info("Setting nonce")
                 self._nonce = data
@@ -111,7 +112,7 @@ class BonecoAuth:
         self, sender: BleakGATTCharacteristic, data: bytearray
     ) -> None:
         logger.debug("[Chars] {0}: {1}".format(sender, data))
-        if sender.handle == 0x029:
+        if sender.uuid == CHARACTERISTIC_AUTH_AND_SERVICE:
             logger.debug(
                 f"RSSI level: {int.from_bytes(data[0:1], byteorder='little', signed=True)}, state: {data[1]}"
             )
