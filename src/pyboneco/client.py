@@ -142,7 +142,7 @@ class BonecoClient:
 
     @require_auth
     async def set_state(self, state: BonecoDeviceState) -> None:
-        await self._client.write_gatt_char(CHARACTERISTIC_DEVICE_STATE, state.hex_value)
+        await self._client.write_gatt_char(CHARACTERISTIC_DEVICE_STATE, state.hex_value, response=True)
 
     @require_auth
     async def get_device_info(self) -> BonecoDeviceInfo:
