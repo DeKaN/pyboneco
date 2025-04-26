@@ -33,6 +33,21 @@ SERVICE_ID_APP_AUTH = "fdce1236-1013-4120-b919-1dbb32a2d132"
 CHARACTERISTIC_AUTH = "fdce2347-1013-4120-b919-1dbb32a2d132"
 CHARACTERISTIC_AUTH_AND_SERVICE = "fdce2348-1013-4120-b919-1dbb32a2d132"
 
+FIRMWARE_HOST = "https://boneco-fw.webulos.com"
+CHINA_FIRMWARE_HOST = "https://fw.boneco.com.cn"
+FIRMWARE_TOKEN = "mp2feQtdrteEGiZ9CWeJUsC73qyeHJb9"
+
+# Using Android app with version "4.70", build number "202" at Android 15 (API level 35)
+FIRMWARE_HEADERS = {
+    "Accept": "application/json",
+    "Content-Type": "application/json",
+    "app-platform": "Android",
+    "app-version": "4.70.202",
+    "app-build-number": "202",
+    "app-api": "35",
+    "app-system-version": "15",
+}
+
 SUPPORTED_DEVICES: list[BonecoDevice] = [
     BonecoSimpleClimateDevice(1, "H300", "H300"),
     BonecoHumidifierDevice(2, "W400", "W400"),

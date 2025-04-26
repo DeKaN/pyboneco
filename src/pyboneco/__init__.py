@@ -22,6 +22,7 @@ from .enums import (
     BonecoOperationMode,
     BonecoTimerStatus,
 )
+from .utils import check_firmware_update
 
 __all__ = [
     "BonecoAdvertisingData",
@@ -45,4 +46,5 @@ __all__ = [
     "BonecoOperationMode",
     "BonecoOperationModeConfig",
     "BonecoTimerStatus",
+    "check_firmware_update",
 ]

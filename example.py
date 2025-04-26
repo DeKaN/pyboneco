@@ -2,7 +2,9 @@ import asyncio
 import json
 import logging
 
-from pyboneco import BonecoAuth, BonecoClient, BonecoAuthState
+from aiohttp import ClientSession
+from locale import getdefaultlocale
+from pyboneco import BonecoAuth, BonecoClient, BonecoAuthState, check_firmware_update
 
 logging.basicConfig(level=logging.INFO)
 
@@ -19,6 +21,17 @@ async def actions(auth: BonecoAuth):
         print(f"Device info: {vars(info)}")
         state = await boneco_client.get_state()
         print(f"Device state: {vars(state)}")
+        async with ClientSession() as websession:
+            locale = getdefaultlocale()[0]
+            country_code = locale.split("_")[1].lower() if locale is not None else "us"
+            result, url = await check_firmware_update(
+                websession,
+                info.device.product_name,
+                info.serial_number,
+                info.software_version,
+                country_code,
+            )
+            print(f"Check result={result}. url='{url}'")
     except Exception as e:
         print(e)
     finally:

@@ -1,6 +1,6 @@
 [project]
 name = "pyboneco"
-version = "0.3.9"
+version = "0.3.10"
 description = "Basic library for working with Boneco devices"
 readme = "README.md"
 authors = [
@@ -16,6 +16,7 @@ classifiers = [
 ]
 requires-python = ">=3.13"
 dependencies = [
+    "aiohttp>=3.11.11",
     "bleak>=0.22.3",
     "bleak-retry-connector>=3.8.1",
     "cryptography>=44.0.0",
@@ -30,5 +31,6 @@ build-backend = "hatchling.build"
 
 [dependency-groups]
 dev = [
+    "pre-commit==4.2.0",
     "ruff==0.9.7",
 ]
