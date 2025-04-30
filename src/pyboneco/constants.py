@@ -59,6 +59,7 @@ SUPPORTED_DEVICES: list[BonecoDevice] = [
     BonecoHumidifierDevice(8, "W400", "W400 CN"),
     BonecoSimpleClimateDevice(9, "H400", "H400 CN"),
     # device with type 10 is missed
+    BonecoAirFanDevice(11, "F225", "F2X5"),
     BonecoAirFanDevice(11, "F225", "F225"),
     BonecoAirFanDevice(12, "F235", "F235"),
     BonecoTopClimateDevice(13, "H700", "H700"),
