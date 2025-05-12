@@ -15,18 +15,6 @@ class BonecoDevice:
     history_support: bool
     particle_sensor: bool
 
-    @staticmethod
-    def is_device_air_fan(model: str):
-        return model in ["F225", "F235"]
-
-    @staticmethod
-    def has_service_operating_counter(model: str):
-        return model in ["H700", "H700 US"]
-
-    @staticmethod
-    def has_device_history_support(model: str):
-        return model in ["H700", "H700 US"]
-
     def __init__(
         self,
         device_type: int,

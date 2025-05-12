@@ -7,17 +7,22 @@ from .constants import (
     MAX_HUMIDITY,
     MIN_LED_BRIGHTNESS,
     MAX_LED_BRIGHTNESS,
+    AIR_FAN_DEVICE_FAN_MAX_VALUE,
+    OTHER_DEVICE_FAN_MAX_VALUE,
+    SUPPORTED_DEVICE_CLASSES_BY_MODEL,
 )
-from .device import BonecoDevice
-from .enums import BonecoOperationMode, BonecoModeStatus, BonecoTimerStatus
+from .enums import (
+    BonecoDeviceClass,
+    BonecoOperationMode,
+    BonecoModeStatus,
+    BonecoTimerStatus,
+)
 
 
 class BonecoDeviceState:
     FAN_MODE_CURRENT_VALUE = 0
     FAN_MODE_TARGET_VALUE = 1
 
-    AIR_FAN_DEVICE_FAN_MAX_VALUE = 32
-    OTHER_DEVICE_FAN_MAX_VALUE = 6
     RESET_DATE_BYTES = b"\xff\xff\xff\xff"
 
     _is_air_fan_device: bool
@@ -50,9 +55,13 @@ class BonecoDeviceState:
     _max_led_brightness: int
 
     def __init__(self, local_name: str, data: bytes) -> None:
-        self._is_air_fan_device = BonecoDevice.is_device_air_fan(local_name)
+        device_class = SUPPORTED_DEVICE_CLASSES_BY_MODEL.get(
+            local_name,
+            BonecoDeviceClass.FAN,
+        )
+        self._is_air_fan_device = device_class == BonecoDeviceClass.FAN
         self._has_service_operating_counter = (
-            BonecoDevice.has_service_operating_counter(local_name)
+            device_class == BonecoDeviceClass.TOP_CLIMATE
         )
         flag = data[0]
         if self.is_air_fan:
@@ -147,9 +156,9 @@ class BonecoDeviceState:
     def fan_level(self, value: int) -> None:
         self._fan = min(
             value,
-            BonecoDeviceState.AIR_FAN_DEVICE_FAN_MAX_VALUE
+            AIR_FAN_DEVICE_FAN_MAX_VALUE
             if self.is_air_fan
-            else BonecoDeviceState.OTHER_DEVICE_FAN_MAX_VALUE,
+            else OTHER_DEVICE_FAN_MAX_VALUE,
         )
         if self.mode_status != BonecoModeStatus.CUSTOM:
             self.mode_status = BonecoModeStatus.CUSTOM

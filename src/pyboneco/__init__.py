@@ -2,12 +2,14 @@ from .advertising_data import BonecoAdvertisingData
 from .auth import BonecoAuth
 from .client import BonecoClient
 from .constants import (
+    AIR_FAN_DEVICE_FAN_MAX_VALUE,
     BONECO_DATA_MARKER,
     BONECO_MANUFACTER_ID,
     MIN_HUMIDITY,
     MIN_LED_BRIGHTNESS,
     MAX_HUMIDITY,
     MAX_LED_BRIGHTNESS,
+    OTHER_DEVICE_FAN_MAX_VALUE,
     SUPPORTED_DEVICES,
     SUPPORTED_DEVICES_BY_TYPE,
     SUPPORTED_DEVICE_CLASSES_BY_MODEL,
@@ -47,4 +49,6 @@ __all__ = [
     "BonecoOperationModeConfig",
     "BonecoTimerStatus",
     "check_firmware_update",
+    "AIR_FAN_DEVICE_FAN_MAX_VALUE",
+    "OTHER_DEVICE_FAN_MAX_VALUE",
 ]
