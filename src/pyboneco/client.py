@@ -1,7 +1,7 @@
 import logging
 from bleak import BleakScanner, BleakClient
 from bleak.backends.device import BLEDevice
-from bleak_retry_connector import BLEAK_RETRY_EXCEPTIONS
+from bleak_retry_connector import BLEAK_RETRY_EXCEPTIONS, establish_connection
 
 from .advertising_data import BonecoAdvertisingData
 from .auth import BonecoAuthState, BonecoAuth
@@ -55,9 +55,14 @@ class BonecoClient:
     def is_connected(self) -> bool:
         return self._client.is_connected
 
-    async def connect(self) -> bool:
+    async def connect(self) -> None:
         if not self.is_connected:
-            await self._client.connect()
+            self._client = await establish_connection(
+                BleakClient,
+                self._auth_data.device,
+                self._auth_data.name,
+                max_attempts=5,
+            )
 
     async def disconnect(self) -> None:
         try:
