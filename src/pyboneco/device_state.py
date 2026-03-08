@@ -321,9 +321,8 @@ class BonecoDeviceState:
             raise ValueError("Invalid maximum brightness value")
 
     def _prepare_reminder_date(self, value: int | None) -> bytes:
-        if self.has_service_operating_counter:
-            if value is None:
-                return BonecoDeviceState.RESET_DATE_BYTES
+        if self.has_service_operating_counter or value is None:
+            return BonecoDeviceState.RESET_DATE_BYTES
         else:
             return value.to_bytes(4, byteorder="little")
 
