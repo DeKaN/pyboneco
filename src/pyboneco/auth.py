@@ -17,13 +17,6 @@ logger = logging.getLogger(__name__)
 
 class BonecoAuth:
     _device: BLEDevice
-    _nonce = bytearray()
-    _device_key = bytearray()
-
-    _state_callback: Callable[["BonecoAuth"], None] | None = None
-    _state_changed: Event = Event()
-    _current_state: BonecoAuthState = BonecoAuthState.AUTH_ERROR
-    _current_auth_level: int = -1
     service_mode_auth_enabled: bool = False
     _keys = {
         0: b"\x00\x00\x01\x02\x01\x02\x01\x02\x01\x02\x01\x02\x01\x02\x01\x02",
@@ -43,7 +36,7 @@ class BonecoAuth:
 
     @property
     def name(self) -> str:
-        return self._device.name
+        return self.model_name or self._device.name
 
     @property
     def state_changed(self) -> Event:
@@ -59,13 +52,22 @@ class BonecoAuth:
 
     def __init__(self, device: BLEDevice, key: str = "") -> None:
         self._device = device
+        self.model_name: str | None = None
         self._device_key = bytearray.fromhex(key) if key else bytearray()
+        self._nonce = bytearray()
+        self._state_callback: Callable[["BonecoAuth"], None] | None = None
+        self._state_changed = Event()
+        self._current_state = BonecoAuthState.AUTH_ERROR
+        self._current_auth_level = -1
 
     def set_auth_state_callback(self, callback: Callable[["BonecoAuth"], None] | None):
         self._state_callback = callback
 
     def reset_state(self) -> None:
         self._current_state = BonecoAuthState.AUTH_ERROR
+        self._current_auth_level = -1
+        self._nonce = bytearray()
+        self._state_changed.clear()
 
     def save(self) -> dict[str, str]:
         return {
@@ -75,8 +77,12 @@ class BonecoAuth:
         }
 
     def auth_handler(self, sender: BleakGATTCharacteristic, data: bytearray) -> None:
-        logger.debug("[Auth] {0}: {1}".format(sender, data))
+        logger.debug("Auth notification: %s bytes", len(data))
         if sender.uuid == CHARACTERISTIC_AUTH:
+            if not data:
+                logger.warning("Empty auth notification")
+                self._set_state(BonecoAuthState.AUTH_ERROR)
+                return
             if len(data) == 20 and data[0] == 1:
                 logger.info("Setting nonce")
                 self._nonce = data
@@ -87,7 +93,10 @@ class BonecoAuth:
                 )
             elif data[0] == 4:
                 logger.info("Processing auth response")
-                if data[2] == 2:
+                if len(data) < 3:
+                    logger.warning("Truncated auth response")
+                    self._set_state(BonecoAuthState.AUTH_ERROR)
+                elif data[2] == 2:
                     self._current_auth_level = data[1]
                     logger.info(f"Changed auth level to {self._current_auth_level}")
                     self._set_state(
@@ -102,6 +111,10 @@ class BonecoAuth:
                     )
                     self._set_state(BonecoAuthState.AUTH_ERROR)
             elif data[0:3] == b"\x06\x00\x00":
+                if len(data) < 19:
+                    logger.warning("Truncated device key notification")
+                    self._set_state(BonecoAuthState.AUTH_ERROR)
+                    return
                 logger.info("Saving device key")
                 self._device_key = data[3:19]
                 self._set_state(BonecoAuthState.GOT_DEVICE_KEY)
@@ -111,8 +124,12 @@ class BonecoAuth:
     def characteristics_handler(
         self, sender: BleakGATTCharacteristic, data: bytearray
     ) -> None:
-        logger.debug("[Chars] {0}: {1}".format(sender, data))
+        logger.debug("Service notification: %s bytes", len(data))
         if sender.uuid == CHARACTERISTIC_AUTH_AND_SERVICE:
+            if len(data) < 2:
+                logger.warning("Truncated service notification")
+                self._set_state(BonecoAuthState.AUTH_ERROR)
+                return
             logger.debug(
                 f"RSSI level: {int.from_bytes(data[0:1], byteorder='little', signed=True)}, state: {data[1]}"
             )
@@ -127,7 +144,7 @@ class BonecoAuth:
 
     def get_request_for_auth_level(self, auth_level: int) -> bytes:
         data = self._get_challenge_response(auth_level)
-        logger.debug(f'response_hex="{data.hex()}" for auth_level={auth_level}')
+        logger.debug("Generated challenge response for auth level %s", auth_level)
         return data
 
     def _get_challenge_response(self, auth_level: int) -> bytes:
@@ -153,6 +170,8 @@ class BonecoAuth:
     def _set_state(self, state: BonecoAuthState) -> None:
         if self._current_state == state:
             logger.debug(f"Skip re-setting state to {state}")
+            if state == BonecoAuthState.AUTH_ERROR:
+                self._state_changed.set()
             return
         self._current_state = state
         self._state_changed.set()
