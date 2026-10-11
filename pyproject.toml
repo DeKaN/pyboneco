@@ -1,6 +1,6 @@
 [project]
 name = "pyboneco"
-version = "0.4.2"
+version = "0.4.3"
 description = "Basic library for working with Boneco devices"
 readme = "README.md"
 authors = [
@@ -33,4 +33,5 @@ build-backend = "hatchling.build"
 dev = [
     "pre-commit>=4.5.1",
     "ruff>=0.15.5",
+    "pytest>=9.0.0",
 ]

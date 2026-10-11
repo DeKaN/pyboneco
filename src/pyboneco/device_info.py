@@ -36,7 +36,7 @@ class BonecoDeviceInfo:
     def _calculate_particle_value(value: int) -> int | None:
         v = BonecoDeviceInfo._process_stub_values(value, 65535)
         return (
-            None if v is None else bisect_left([0, 120, 324, 672, 1200, 1944, 3840], v)
+            None if v is None else bisect_left([120, 324, 672, 1200, 1944, 3840], v) + 1
         )
 
     # TODO: check all usages later
@@ -72,9 +72,9 @@ class BonecoDeviceInfo:
         self._hum_pack_error = (flag >> 7) & 1
         self._temp = BonecoDeviceInfo._process_stub_values(data[2])
         self._humidity = BonecoDeviceInfo._process_stub_values(data[3])
-        self._particle_value = BonecoDeviceInfo._calculate_particle_value(
-            int.from_bytes(data[4:6], byteorder="little")
-        )
+        raw_particles = int.from_bytes(data[4:6], byteorder="little")
+        self._particle_raw = self._process_stub_values(raw_particles, 65535)
+        self._particle_value = self._calculate_particle_value(raw_particles)
         self._voc = BonecoDeviceInfo._process_stub_values(
             int.from_bytes(data[6:8], byteorder="little"), 65535
         )
@@ -114,7 +114,7 @@ class BonecoDeviceInfo:
 
     @property
     def fan_error(self) -> bool:
-        return False and self._fan_error == 1
+        return self._fan_error == 1
 
     @property
     def hum_pack_error(self) -> bool:
@@ -137,10 +137,15 @@ class BonecoDeviceInfo:
         return self._humidity
 
     @property
-    def particle_value(self):
-        return self.has_particle_sensor and BonecoDeviceInfo.transform_particle_value(
-            self._particle_value
-        )
+    def particle_value(self) -> int | None:
+        if not self.has_particle_sensor:
+            return None
+        return BonecoDeviceInfo.transform_particle_value(self._particle_value)
+
+    @property
+    def particle_raw(self) -> int | None:
+        """Return the unscaled particle reading, or None when unavailable."""
+        return self._particle_raw if self.has_particle_sensor else None
 
     @property
     def voc(self) -> int | None:

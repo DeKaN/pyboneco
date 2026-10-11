@@ -82,6 +82,7 @@ class BonecoDeviceState:
         self.__unused = (flag >> 4) & 15
         self._target_humidity = 0 if self.is_air_fan else data[2]
         flag = data[3]
+        self._service_flags = flag
         self._change_filter = (flag >> 4) & 1
         self._change_iss = (flag >> 5) & 1
         self._clean = (flag >> 6) & 1
@@ -155,7 +156,7 @@ class BonecoDeviceState:
     @fan_level.setter
     def fan_level(self, value: int) -> None:
         self._fan = min(
-            value,
+            max(0, value),
             AIR_FAN_DEVICE_FAN_MAX_VALUE
             if self.is_air_fan
             else OTHER_DEVICE_FAN_MAX_VALUE,
@@ -306,6 +307,7 @@ class BonecoDeviceState:
     def min_led_brightness(self, value: int) -> None:
         if MIN_LED_BRIGHTNESS <= value <= MAX_LED_BRIGHTNESS:
             self._min_led_brightness = value
+            self._max_led_brightness = max(value, self._max_led_brightness)
         else:
             raise ValueError("Invalid minimum brightness value")
 
@@ -317,12 +319,15 @@ class BonecoDeviceState:
     def max_led_brightness(self, value: int) -> None:
         if MIN_LED_BRIGHTNESS <= value <= MAX_LED_BRIGHTNESS:
             self._max_led_brightness = value
+            self._min_led_brightness = min(value, self._min_led_brightness)
         else:
             raise ValueError("Invalid maximum brightness value")
 
     def _prepare_reminder_date(self, value: int | None) -> bytes:
-        if self.has_service_operating_counter or value is None:
+        if value is None:
             return BonecoDeviceState.RESET_DATE_BYTES
+        elif self.has_service_operating_counter:
+            return bytes(4)
         else:
             return value.to_bytes(4, byteorder="little")
 
@@ -345,26 +350,16 @@ class BonecoDeviceState:
             | (self._timer & 1)
         )
 
-        if (
-            filter_data := self._prepare_reminder_date(self._reminder_filter_date)
-        ) == BonecoDeviceState.RESET_DATE_BYTES:
-            self._reminder_filter_date = 0
-        if (
-            iss_data := self._prepare_reminder_date(self._reminder_iss_date)
-        ) == BonecoDeviceState.RESET_DATE_BYTES:
-            self._reminder_filter_date = 0
-        if (
-            clean_data := self._prepare_reminder_date(self._reminder_clean_date)
-        ) == BonecoDeviceState.RESET_DATE_BYTES:
-            self._reminder_filter_date = 0
+        filter_data = self._prepare_reminder_date(self._reminder_filter_date)
+        iss_data = self._prepare_reminder_date(self._reminder_iss_date)
+        clean_data = self._prepare_reminder_date(self._reminder_clean_date)
         data = (
             bytes(
                 [
                     byte_fan,
                     byte_props,
                     self.target_humidity,
-                    # self._change_filter, self._change_iss, self._clean, self._change_water parsed from the next byte
-                    0,
+                    self._service_flags,
                 ]
             )
             + filter_data
@@ -372,9 +367,8 @@ class BonecoDeviceState:
             + clean_data
             + bytes(
                 [
-                    # self._clean_mode_support parsed from shifting to 5 the next byte
                     ((self.on_off_timer_status.value & 3) << 6)
-                    | ((0 & 1) << 5)
+                    | ((self._clean_mode_support & 1) << 5)
                     | (self._on_off_timer_hours & 31),
                     self.on_of_timer_minutes,
                     self.min_led_brightness,
